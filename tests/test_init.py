@@ -65,11 +65,39 @@ class InstallTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             installer.install(self.root, True)
 
-    def test_subdirectory_rejected(self):
+    def test_subdirectory_uses_actual_root(self):
         sub = self.root / 'sub'
         sub.mkdir()
-        with self.assertRaises(ValueError):
-            installer.install(sub, True)
+        installer.install(sub, True)
+        self.assertTrue((self.root / '.local/README.md').exists())
+        self.assertFalse((sub / '.local').exists())
+
+    def test_default_cli_target_from_nested_directory(self):
+        sub = self.root / 'nested'
+        sub.mkdir()
+        subprocess.run(['python3', str(ROOT / 'scripts/init.py'), '--apply'],
+                       cwd=sub, check=True, capture_output=True, text=True)
+        local = self.root / '.local'
+        self.assertTrue(local.exists())
+        for name in ['README.md', 'docs/progress.md', 'spec-design/001-git-workflow.md']:
+            text = (local / name).read_text()
+            self.assertIn(str(self.root.resolve()), text)
+            self.assertNotIn('{{', text)
+        self.assertNotIn(str(self.root.resolve()), (self.root / 'AGENTS.md').read_text())
+
+    def test_special_paths_are_safe_in_generated_shell(self):
+        root = self.root / "repo ' $(touch UNEXPECTED)"
+        root.mkdir()
+        installer.git(root, 'init', '-b', 'main')
+        installer.install(root, True)
+        text = (root / '.local/spec-design/001-git-workflow.md').read_text()
+        assignments = [line for line in text.splitlines()
+                       if line.startswith(('repo_root=', 'worktree_root='))]
+        command = '\n'.join(assignments) + '\nprintf \'%s\n%s\' "$repo_root" "$worktree_root"'
+        output = subprocess.check_output(['sh', '-c', command], cwd=root, text=True)
+        self.assertEqual(output.splitlines(), [str(root.resolve()),
+                          str(root.resolve().parent / (root.name + '-worktrees'))])
+        self.assertFalse((root / 'UNEXPECTED').exists())
 
     def test_non_repository_rejected(self):
         with tempfile.TemporaryDirectory() as other:

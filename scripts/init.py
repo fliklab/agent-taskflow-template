@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 """Install reviewed local task templates in an existing Git repository."""
 import argparse
+import re
 from pathlib import Path
 import shutil
+import shlex
 import subprocess
 import sys
 
@@ -16,10 +18,19 @@ def git(root, *args):
                           text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).stdout.strip()
 
 
-def install(target, apply=False):
-    root = Path(target).expanduser().resolve(strict=True)
-    if Path(git(root, 'rev-parse', '--show-toplevel')).resolve() != root:
-        raise ValueError('Git 저장소 루트 경로를 지정하세요.')
+def install(target='.', apply=False):
+    location = Path(target).expanduser().resolve(strict=True)
+    root = Path(git(location, 'rev-parse', '--show-toplevel')).resolve()
+    worktree_root = root.parent / (root.name + '-worktrees')
+    replacements = {
+        '{{PROJECT_NAME}}': root.name,
+        '{{REPO_ROOT}}': str(root),
+        '{{WORKTREE_ROOT}}': str(worktree_root),
+        '{{REPO_ROOT_SHELL}}': shlex.quote(str(root)),
+        '{{WORKTREE_ROOT_SHELL}}': shlex.quote(str(worktree_root)),
+    }
+    print(f'대상 저장소: {root}')
+    print(f'worktree 기본 경로: {worktree_root}')
     local = root / '.local'
     if local.exists() or local.is_symlink():
         raise ValueError('기존 .local을 보존합니다. 자동 덮어쓰기·업그레이드는 지원하지 않습니다.')
@@ -43,6 +54,12 @@ def install(target, apply=False):
         return
     # No Git staging, commits, network operations, or modification of product files.
     shutil.copytree(SOURCE / 'local', local)
+    for document in local.rglob('*.md'):
+        content = document.read_text()
+        # One pass prevents token-like characters in real paths being replaced again.
+        content = re.sub(r'\{\{[A-Z_]+\}\}',
+                         lambda match: replacements.get(match[0], match[0]), content)
+        document.write_text(content)
     for name, content in planned.items():
         (root / name).write_text(content)
     git(root, 'check-ignore', '.local/README.md')
@@ -51,7 +68,8 @@ def install(target, apply=False):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('target', help='대상 Git 저장소 루트')
+    parser.add_argument('target', nargs='?', default='.',
+                        help='대상 저장소 또는 내부 디렉터리 (기본: 현재 위치의 Git 저장소)')
     parser.add_argument('--apply', action='store_true', help='미리보기 내용을 실제 적용')
     args = parser.parse_args()
     try:

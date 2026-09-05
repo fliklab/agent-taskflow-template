@@ -8,17 +8,50 @@
 
 Python 3.9 이상과 Git이 필요합니다. 별도 패키지 설치는 없습니다.
 
+템플릿은 현재 `~/dev/local-task-template`에 있습니다. 다른 컴퓨터에서 처음 받을 때만 다음 명령을 실행합니다.
+
 ```sh
-# 템플릿을 아직 받지 않았다면 (비공개 저장소 접근 권한 필요)
 git clone https://github.com/fliklab/local-task-template.git ~/dev/local-task-template
-
-# 대상 Git 저장소의 절대 경로를 사용합니다. 기본 실행은 미리보기입니다.
-python3 ~/dev/local-task-template/scripts/init.py /absolute/path/to/your-repo
-python3 ~/dev/local-task-template/scripts/init.py /absolute/path/to/your-repo --apply
-
-git -C /absolute/path/to/your-repo diff -- AGENTS.md .gitignore
-git -C /absolute/path/to/your-repo check-ignore .local/README.md
 ```
+
+**적용할 저장소의 터미널에서** 다음 명령을 실행하세요. 저장소 루트 또는 하위 디렉터리 어디에서 실행해도 Git이 실제 루트를 찾습니다. 대상 경로를 생략하면 현재 위치의 저장소를 사용합니다.
+
+```sh
+# 미리보기: 실제 대상과 worktree 경로 확인, 파일 변경 없음
+python3 ~/dev/local-task-template/scripts/init.py
+
+# 확인한 저장소에 적용
+python3 ~/dev/local-task-template/scripts/init.py --apply
+
+# 실제 Git 루트를 사용해 변경·제외 상태 확인
+repo_root="$(git rev-parse --show-toplevel)"
+git -C "$repo_root" diff -- AGENTS.md .gitignore
+git -C "$repo_root" check-ignore .local/README.md
+```
+
+다른 위치에서 실행할 때는 실제 저장소 경로를 인자로 줄 수 있습니다. 예를 들어 아임해피 저장소를 **미리보기로 확인**하는 명령은 다음과 같습니다. 이 저장소에는 이미 `.local`이 있으므로 기존 기록 보호를 위해 설치가 중단됩니다.
+
+```sh
+python3 ~/dev/local-task-template/scripts/init.py ~/dev/i-am-happy-money-class
+```
+
+공백이 있는 경로는 `"$repo_root"`처럼 따옴표로 감쌉니다. 설치는 운영 기록을 관리할 기본 worktree에서 수행하세요. 구현용 worktree는 기본 worktree의 `.local`을 공유합니다.
+
+## 실제 경로가 반영되는 위치
+
+설치 도구는 대상의 `git rev-parse --show-toplevel` 결과를 사용합니다. 프로젝트명은 저장소 디렉터리 이름, worktree 기본 경로는 같은 상위 폴더의 `{저장소 이름}-worktrees`입니다.
+
+| 설치 파일 | 자동 반영 내용 |
+|---|---|
+| `.local/README.md` | 프로젝트명, 실제 저장소·운영 기록·worktree 경로 |
+| `.local/docs/progress.md` | 프로젝트명과 실제 저장소 경로 |
+| `.local/spec-design/001-git-workflow.md` | 실제 경로가 들어간 worktree 생성·공유 명령 |
+
+예를 들어 `/Users/flik/dev/local-task-template`의 worktree 기본 경로는 `/Users/flik/dev/local-task-template-worktrees`입니다. 절대 경로는 Git에서 제외되는 `.local` 문서에만 반영하며, 공유할 `AGENTS.md`에는 상대 경로를 유지합니다. `template/local/`의 `{{REPO_ROOT}}` 같은 표식은 설치 도구가 치환하는 양식 문법입니다.
+
+저장소를 다른 위치로 옮기면 `.local/README.md`, `docs/progress.md`, `spec-design/001-git-workflow.md`의 경로와 공유 symlink를 갱신하세요. 아래 README의 Git 기반 명령은 실행 시 현재 경로를 다시 구합니다.
+
+## 기존 파일 보존
 
 설치 도구는 `.local/`을 생성하고 기존 `AGENTS.md`·`.gitignore` 끝에 지침과 제외 규칙을 추가합니다. 기존 내용을 보존하며 자동 stage·commit·push는 하지 않습니다. 기존 `.local`, 이미 추적 중인 `.local`, 중복 설치 표식, symlink로 된 수정 대상 파일이 있으면 중단합니다. 재설치·자동 업데이트는 지원하지 않으며 기존 운영 기록이 있는 저장소는 양식을 수동 비교해 필요한 내용만 반영합니다. 적용 도중 파일시스템 오류가 발생하면 부분 적용 여부를 확인하고 복구해야 합니다.
 
@@ -26,7 +59,7 @@ git -C /absolute/path/to/your-repo check-ignore .local/README.md
 
 ## 적용 후 설정
 
-1. `.local/docs/progress.md`에 프로젝트명·현재 단계·조정 담당자를 적습니다.
+1. `.local/docs/progress.md`의 자동 입력된 프로젝트명·경로를 확인하고 현재 단계·조정 담당자를 적습니다.
 2. `.local/spec-design/000-project-baseline.md`에 요구·범위·구조·미결정을 적습니다.
 3. `002-development-and-verification.md`에 실제 검증 명령을 넣습니다.
 4. 기존 branch 정책이 있으면 `001-git-workflow.md`와 루트 `AGENTS.md`를 함께 맞춥니다. 기본은 `agent/{task-id}-{slug}`입니다.
@@ -34,7 +67,7 @@ git -C /absolute/path/to/your-repo check-ignore .local/README.md
 
 ## 태스크 생성 → 진행 → 완료
 
-처음에는 `000`을 사용합니다. 이후에는 TO_DO·IN_PROGRESS·DONE 전체에서 사용된 최대 번호의 다음 번호를 조정 담당자 한 명이 배정합니다. 아래 명령은 대상 프로젝트 루트에서 실행합니다.
+처음에는 `000`을 사용합니다. 이후에는 TO_DO·IN_PROGRESS·DONE 전체에서 사용된 최대 번호의 다음 번호를 조정 담당자 한 명이 배정합니다. 아래 명령은 대상 프로젝트 루트에서 실행합니다. 하위 디렉터리라면 먼저 `cd "$(git rev-parse --show-toplevel)"`로 이동합니다.
 
 ```sh
 cp -R .local/templates/task .local/tasks/TO_DO/000-project-setup
@@ -46,9 +79,13 @@ mv .local/tasks/TO_DO/000-project-setup .local/tasks/IN_PROGRESS/
 구현 시작 시 base SHA와 owned/shared/excluded 파일을 기록하고 전용 branch·worktree를 만듭니다. 작은 조사·기획 작업은 `.local`만으로 진행할 수 있습니다.
 
 ```sh
-git worktree add -b agent/000-project-setup ../your-repo-worktrees/000-project-setup main
+# 기본 worktree 안에서 실행: 실제 저장소 위치와 이름으로 경로 생성
+repo_root="$(git rev-parse --show-toplevel)"
+worktree_root="$(dirname "$repo_root")/$(basename "$repo_root")-worktrees"
+task_id=000-project-setup
+git -C "$repo_root" worktree add -b "agent/$task_id" "$worktree_root/$task_id" main
 # 필요한 경우 공유 기록을 읽기 전용 운영 방식으로 참조
-ln -s /absolute/path/to/your-repo/.local ../your-repo-worktrees/000-project-setup/.local
+ln -s "$repo_root/.local" "$worktree_root/$task_id/.local"
 ```
 
 판단은 `.note.md`, 실행·완료 기준은 `.tasklist.md`, 검증 결과와 다음 작업자에게 넘길 내용은 `.log.md`에 기록합니다. 검증된 단위가 끝나면 task branch에서 해당 파일만 stage하고 local commit합니다.
@@ -105,4 +142,4 @@ tests/test_init.py                 설치·보존·Git 제외·worktree 검증
 python3 -m unittest discover -s tests -v
 ```
 
-테스트는 임시 Git 저장소에서 미리보기, 기존 파일 보존, 재설치 거부, 추적 중인 `.local` 보호, symlink 보호, 잘못된 경로 거부, 태스크 폴더 이동과 공유 worktree 조회를 확인합니다.
+테스트는 임시 Git 저장소에서 미리보기, 기존 파일 보존, 재설치 거부, 추적 중인 `.local` 보호, symlink 보호, Git 외부 경로 거부, 하위 디렉터리·경로 생략·실제 경로 치환·쉘 특수문자 보호, 태스크 폴더 이동과 공유 worktree 조회를 확인합니다.

@@ -11,9 +11,13 @@
 3. 일반 구현은 별도 worktree에서 수행한다. main의 기존 사용자 변경을 옮기거나 되돌리지 않는다.
 
 ```sh
-git worktree add -b agent/001-example ../PROJECT-worktrees/001-example main
-# PROJECT를 실제 저장소 이름으로 바꾼다. 아래 링크는 선택 사항이며 읽기 전용 운영 규칙을 적용한다.
-ln -s /absolute/path/to/PROJECT/.local ../PROJECT-worktrees/001-example/.local
+# 설치한 저장소의 실제 경로가 아래에 채워진다. task_id만 해당 작업에 맞춘다.
+repo_root={{REPO_ROOT_SHELL}}
+worktree_root={{WORKTREE_ROOT_SHELL}}
+task_id=001-example
+git -C "$repo_root" worktree add -b "agent/$task_id" "$worktree_root/$task_id" main
+# 선택 사항: 기본 worktree의 운영 기록을 읽기 전용 운영 방식으로 공유
+ln -s "$repo_root/.local" "$worktree_root/$task_id/.local"
 ```
 
 `.local` 링크 자체도 Git에서 제외되어야 한다. symlink는 운영 규칙상 읽기 전용일 뿐 OS 접근 제어가 아니다.
