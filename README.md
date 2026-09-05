@@ -6,7 +6,7 @@
 
 ## 기존 저장소에 적용
 
-Python 3.9 이상과 Git이 필요합니다. 별도 패키지 설치는 없습니다.
+Git과 Bash 3.2 이상, macOS·Linux의 기본 명령(`awk`, `find`, `grep`, `mktemp` 등)을 사용합니다. 별도 언어 런타임이나 패키지 설치는 필요하지 않습니다. macOS 기본 Bash에서 실행할 수 있고, Windows에서는 WSL 환경을 사용하세요.
 
 템플릿은 현재 `~/dev/local-task-template`에 있습니다. 다른 컴퓨터에서 처음 받을 때만 다음 명령을 실행합니다.
 
@@ -18,10 +18,10 @@ git clone https://github.com/fliklab/local-task-template.git ~/dev/local-task-te
 
 ```sh
 # 미리보기: 실제 대상과 worktree 경로 확인, 파일 변경 없음
-python3 ~/dev/local-task-template/scripts/init.py
+bash ~/dev/local-task-template/scripts/init.sh
 
 # 확인한 저장소에 적용
-python3 ~/dev/local-task-template/scripts/init.py --apply
+bash ~/dev/local-task-template/scripts/init.sh --apply
 
 # 실제 Git 루트를 사용해 변경·제외 상태 확인
 repo_root="$(git rev-parse --show-toplevel)"
@@ -32,7 +32,7 @@ git -C "$repo_root" check-ignore .local/README.md
 다른 위치에서 실행할 때는 실제 저장소 경로를 인자로 줄 수 있습니다. 예를 들어 아임해피 저장소를 **미리보기로 확인**하는 명령은 다음과 같습니다. 이 저장소에는 이미 `.local`이 있으므로 기존 기록 보호를 위해 설치가 중단됩니다.
 
 ```sh
-python3 ~/dev/local-task-template/scripts/init.py ~/dev/i-am-happy-money-class
+bash ~/dev/local-task-template/scripts/init.sh ~/dev/i-am-happy-money-class
 ```
 
 공백이 있는 경로는 `"$repo_root"`처럼 따옴표로 감쌉니다. 설치는 운영 기록을 관리할 기본 worktree에서 수행하세요. 구현용 worktree는 기본 worktree의 `.local`을 공유합니다.
@@ -111,7 +111,7 @@ mv .local/tasks/IN_PROGRESS/000-project-setup .local/tasks/DONE/
 ## 저장소 구성
 
 ```text
-scripts/init.py                    기존 저장소 적용 도구 (기본 미리보기)
+scripts/init.sh                    기존 저장소 적용 도구 (기본 미리보기)
 template/AGENTS.fragment.md         루트 AGENTS에 추가할 공통 지침
 template/local/
   README.md                        운영 규칙과 읽는 순서
@@ -124,11 +124,11 @@ template/local/
   templates/service.md             서비스별 기록 양식
   external-services/               준비·검증·인수 현황과 이력
   references/                      원본 참고 자료
-  tools/check-parallel-impact.py   모든 worktree와 활성 태스크 이슈 조회
-tests/test_init.py                 설치·보존·Git 제외·worktree 검증
+  tools/check-parallel-impact.sh   모든 worktree와 활성 태스크 이슈 조회
+tests/test-init.sh                 설치·보존·Git 제외·worktree 검증
 ```
 
-교차 영향 조회 도구는 `python3 .local/tools/check-parallel-impact.py`로 실행합니다. 파일 소유권·BLOCKER 해결 여부는 담당자가 판단합니다. 병렬 작업을 하지 않아도 태스크 구조와 handoff 양식을 그대로 사용할 수 있습니다.
+교차 영향 조회 도구는 `bash .local/tools/check-parallel-impact.sh`로 실행합니다. 파일 소유권·BLOCKER 해결 여부는 담당자가 판단합니다. 병렬 작업을 하지 않아도 태스크 구조와 handoff 양식을 그대로 사용할 수 있습니다.
 
 ## 보관과 인수인계
 
@@ -139,7 +139,7 @@ tests/test_init.py                 설치·보존·Git 제외·worktree 검증
 ## 템플릿 검증
 
 ```sh
-python3 -m unittest discover -s tests -v
+bash tests/test-init.sh
 ```
 
 테스트는 임시 Git 저장소에서 미리보기, 기존 파일 보존, 재설치 거부, 추적 중인 `.local` 보호, symlink 보호, Git 외부 경로 거부, 하위 디렉터리·경로 생략·실제 경로 치환·쉘 특수문자 보호, 태스크 폴더 이동과 공유 worktree 조회를 확인합니다.

@@ -23,4 +23,4 @@ ACKNOWLEDGED는 해결을 뜻하지 않는다. 미해결 BLOCKER는 계속 영�
 RESOLVED에는 실제 검증 증거, ACCEPTED_RISK에는 승인자·완화책·재검토 조건이 필요하다.
 태스크 종료 전 unresolved issue는 해결하거나 책임 태스크로 이관하고 moved_from과 원래 태스크의 링크를 남긴다.
 
-`python3 .local/tools/check-parallel-impact.py`는 읽기 전용 현황 조회다. 검사 통과나 자동 BLOCKER 판정 도구가 아니다.
+`bash .local/tools/check-parallel-impact.sh`는 읽기 전용 현황 조회다. 검사 통과나 자동 BLOCKER 판정 도구가 아니다.
