@@ -12,25 +12,16 @@
 
 ```mermaid
 flowchart LR
-    Request["요청·요구사항"] --> Todo["tasks/TO_DO<br/>태스크 생성"]
-    Todo -->|작업 시작| Active["tasks/IN_PROGRESS<br/>범위·소유권·완료 조건 확정"]
+    Request["요청"] --> Todo["TO_DO<br/>태스크 생성"]
+    Todo --> Active["IN_PROGRESS<br/>범위·기준 확정"]
+    Active --> Work["task branch<br/>구현 · 검증 · commit"]
+    Work --> Done["DONE<br/>결과·handoff"]
+    Done --> Remote["push · PR · main · 배포<br/>별도 상태"]
 
-    subgraph TaskWorktree["구현 worktree · task branch"]
-        Read[".local symlink로<br/>기준과 태스크 확인"] --> Implement["구현"]
-        Implement --> Verify["검증"]
-        Verify --> Commit["코드·공유 문서<br/>local commit"]
-    end
-
-    Active --> Read
-    Commit --> Handoff["결과·검증·남은 위험<br/>handoff 기록"]
-    Handoff -->|완료 조건 충족| Done["tasks/DONE<br/>태스크 폴더 이동"]
-
-    Templates["templates/task<br/>새 태스크 양식"] -.-> Todo
-    Standards["spec-design<br/>장기 기준·운영 규칙"] -.-> Active
-    Progress["docs/progress.md<br/>현재 상태·다음 행동"] -.-> Todo
-    Progress -.-> Active
-    Done -.-> Progress
-    Done --> Remote["push · PR · main 통합 · 배포<br/>각각 별도 상태로 관리"]
+    Templates["templates/task"] -. 양식 .-> Todo
+    Standards["spec-design"] -. 기준 .-> Active
+    Progress["docs/progress.md"] -. 상태 갱신 .-> Active
+    Done -. 완료 반영 .-> Progress
 ```
 
 기본 worktree의 조정 담당자는 `TO_DO → IN_PROGRESS → DONE` 이동과 `docs/progress.md` 갱신을 담당합니다. 구현 worktree에서는 공유 `.local`을 운영상 읽기 전용으로 참조하며, 판단과 검증 결과는 handoff를 통해 기본 worktree에 반영합니다.
@@ -39,28 +30,27 @@ flowchart LR
 
 ```mermaid
 flowchart TB
-    Local[".local/"]
-    Local --> Guide["README.md<br/>운영 규칙·읽는 순서"]
-    Local --> Docs["docs/"]
-    Docs --> ProgressFile["progress.md<br/>현재 단계·작업·다음 행동"]
-    Local --> Specs["spec-design/<br/>장기 요구·설계·Git·검증 기준"]
-    Local --> Refs["references/<br/>원본 요구·회의·조사 자료"]
-    Local --> Services["external-services/<br/>외부 서비스 준비·검증·인수"]
-    Local --> Tasks["tasks/"]
-    Tasks --> TodoDir["TO_DO/<br/>시작 전"]
-    Tasks --> ActiveDir["IN_PROGRESS/<br/>진행·차단·교차 영향"]
-    Tasks --> DoneDir["DONE/<br/>완료·검증·handoff"]
-    ActiveDir --> TaskDir["{ID}-{slug}/"]
-    TaskDir --> TaskReadme["README.md<br/>목적·범위·소유권·상태"]
-    TaskDir --> Context["*.human.md<br/>요청 원문·맥락"]
-    TaskDir --> Checklist["*.tasklist.md<br/>실행·완료 조건"]
-    TaskDir --> Decision["*.note.md<br/>조사·판단"]
-    TaskDir --> Log["*.log.md<br/>결과·인수인계"]
-    Local --> TemplatesDir["templates/<br/>태스크·서비스 빈 양식"]
-    Local --> Tools["tools/<br/>worktree·교차 영향 조회"]
+    subgraph Local[".local/"]
+        direction TB
+        Guide["README.md"]
+        Specs["spec-design/"]
+        Refs["references/"]
+        Services["external-services/"]
+        Templates["templates/"]
+        Tools["tools/"]
+
+        Docs["docs/"] --> Progress["progress.md"]
+
+        subgraph Tasks["tasks/"]
+            direction LR
+            Todo["TO_DO/"]
+            Active["IN_PROGRESS/"]
+            Done["DONE/"]
+        end
+    end
 ```
 
-`tasks/` 아래의 태스크 폴더는 복제되지 않고 상태에 따라 디렉터리 전체가 이동합니다. `template/local/`은 저장소에 공유하는 빈 양식이고, 설치 후 만들어지는 실제 `.local/`은 프로젝트별 내부 기록입니다.
+`tasks/` 아래의 태스크 폴더는 복제되지 않고 상태에 따라 디렉터리 전체가 이동합니다. 태스크 안에는 목적과 범위, 요청 원문, 체크리스트, 판단, handoff를 나누어 기록합니다. `template/local/`은 저장소에 공유하는 빈 양식이고, 설치 후 만들어지는 실제 `.local/`은 프로젝트별 내부 기록입니다.
 
 ## 기존 저장소에 적용
 
