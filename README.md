@@ -28,64 +28,37 @@ flowchart LR
 
 ### 폴더 구조
 
-<details open>
-<summary><strong><code>.local/</code></strong></summary>
-<div>
-  <details>
-    <summary>&emsp;<code>docs/</code></summary>
-    <div>&emsp;&emsp;<code>progress.md</code></div>
-  </details>
-  <details>
-    <summary>&emsp;<code>external-services/</code></summary>
-    <div>&emsp;&emsp;<code>inventory.md</code></div>
-    <div>&emsp;&emsp;<code>timeline.md</code></div>
-  </details>
-  <details>
-    <summary>&emsp;<code>references/</code></summary>
-    <div>&emsp;&emsp;<code>{reference-file}</code></div>
-  </details>
-  <details>
-    <summary>&emsp;<code>spec-design/</code></summary>
-    <div>&emsp;&emsp;<code>000-project-baseline.md</code></div>
-    <div>&emsp;&emsp;<code>001-git-workflow.md</code></div>
-    <div>&emsp;&emsp;<code>002-development-and-verification.md</code></div>
-  </details>
-  <details open>
-    <summary>&emsp;<code>tasks/</code></summary>
-    <div>
-      <details>
-        <summary>&emsp;&emsp;<code>DONE/</code></summary>
-        <div>&emsp;&emsp;&emsp;<code>{ID}-{slug}/</code></div>
-      </details>
-      <details>
-        <summary>&emsp;&emsp;<code>IN_PROGRESS/</code></summary>
-        <div>&emsp;&emsp;&emsp;<code>{ID}-{slug}/</code></div>
-      </details>
-      <details>
-        <summary>&emsp;&emsp;<code>TO_DO/</code></summary>
-        <div>&emsp;&emsp;&emsp;<code>{ID}-{slug}/</code></div>
-      </details>
-    </div>
-  </details>
-  <details>
-    <summary>&emsp;<code>templates/</code></summary>
-    <div>&emsp;&emsp;<code>service.md</code></div>
-    <details>
-      <summary>&emsp;&emsp;<code>task/</code></summary>
-      <div>&emsp;&emsp;&emsp;<code>README.md</code></div>
-      <div>&emsp;&emsp;&emsp;<code>*.human.md</code></div>
-      <div>&emsp;&emsp;&emsp;<code>*.tasklist.md</code></div>
-      <div>&emsp;&emsp;&emsp;<code>*.note.md</code></div>
-      <div>&emsp;&emsp;&emsp;<code>*.log.md</code></div>
-    </details>
-  </details>
-  <details>
-    <summary>&emsp;<code>tools/</code></summary>
-    <div>&emsp;&emsp;<code>check-parallel-impact.sh</code></div>
-  </details>
-  <div>&emsp;<code>README.md</code></div>
-</div>
-</details>
+```text
+📁 .local/
+├── 📄 README.md
+├── 📁 docs/
+│   └── 📄 progress.md
+├── 📁 external-services/
+│   ├── 📄 inventory.md
+│   └── 📄 timeline.md
+├── 📁 references/
+├── 📁 spec-design/
+│   ├── 📄 000-project-baseline.md
+│   ├── 📄 001-git-workflow.md
+│   └── 📄 002-development-and-verification.md
+├── 📁 tasks/
+│   ├── 📁 TO_DO/
+│   │   └── 📁 {ID}-{slug}/
+│   ├── 📁 IN_PROGRESS/
+│   │   └── 📁 {ID}-{slug}/
+│   └── 📁 DONE/
+│       └── 📁 {ID}-{slug}/
+├── 📁 templates/
+│   ├── 📄 service.md
+│   └── 📁 task/
+│       ├── 📄 README.md
+│       ├── 📄 *.human.md
+│       ├── 📄 *.tasklist.md
+│       ├── 📄 *.note.md
+│       └── 📄 *.log.md
+└── 📁 tools/
+    └── 📄 check-parallel-impact.sh
+```
 
 `tasks/` 아래의 태스크 폴더는 복제되지 않고 상태에 따라 디렉터리 전체가 이동합니다. 태스크 안에는 목적과 범위, 요청 원문, 체크리스트, 판단, handoff를 나누어 기록합니다. `template/local/`은 저장소에 공유하는 빈 양식이고, 설치 후 만들어지는 실제 `.local/`은 프로젝트별 내부 기록입니다.
 
