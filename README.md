@@ -30,37 +30,20 @@ flowchart LR
 
 ```text
 📁 .local/
-├── 📄 README.md
-├── 📁 docs/
-│   └── 📄 progress.md
-├── 📁 external-services/
-│   ├── 📄 inventory.md
-│   └── 📄 timeline.md
-├── 📁 references/
-├── 📁 spec-design/
-│   ├── 📄 000-project-baseline.md
-│   ├── 📄 001-git-workflow.md
-│   └── 📄 002-development-and-verification.md
+├── 📄 README.md            운영 규칙과 읽는 순서
+├── 📁 docs/                현재 진행 상황
+├── 📁 spec-design/         장기 기준과 설계
+├── 📁 references/          원본·참고 자료
+├── 📁 external-services/   외부 서비스 기록
 ├── 📁 tasks/
-│   ├── 📁 TO_DO/
-│   │   └── 📁 {ID}-{slug}/
-│   ├── 📁 IN_PROGRESS/
-│   │   └── 📁 {ID}-{slug}/
-│   └── 📁 DONE/
-│       └── 📁 {ID}-{slug}/
-├── 📁 templates/
-│   ├── 📄 service.md
-│   └── 📁 task/
-│       ├── 📄 README.md
-│       ├── 📄 *.human.md
-│       ├── 📄 *.tasklist.md
-│       ├── 📄 *.note.md
-│       └── 📄 *.log.md
-└── 📁 tools/
-    └── 📄 check-parallel-impact.sh
+│   ├── 📁 TO_DO/           시작 전
+│   ├── 📁 IN_PROGRESS/     진행 중
+│   └── 📁 DONE/            완료·handoff
+├── 📁 templates/           새 기록 양식
+└── 📁 tools/               운영 점검 도구
 ```
 
-`tasks/` 아래의 태스크 폴더는 복제되지 않고 상태에 따라 디렉터리 전체가 이동합니다. 태스크 안에는 목적과 범위, 요청 원문, 체크리스트, 판단, handoff를 나누어 기록합니다. `template/local/`은 저장소에 공유하는 빈 양식이고, 설치 후 만들어지는 실제 `.local/`은 프로젝트별 내부 기록입니다.
+`tasks/`의 태스크 폴더는 복제되지 않고 상태에 따라 디렉터리 전체가 이동합니다. 개별 파일까지 포함한 상세 구조는 아래 [저장소 구성](#저장소-구성)에서 확인할 수 있습니다.
 
 ## 기존 저장소에 적용
 
