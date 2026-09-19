@@ -4,6 +4,47 @@
 
 이 저장소의 `template/local/`에는 **공유 가능한 빈 양식과 규칙**만 들어 있습니다. 다른 저장소에 적용하면 `.local/`이 만들어지며 실제 운영 기록은 Git과 GitHub에서 제외됩니다. 원본 프로젝트의 코드·운영 이력·계정 정보는 포함하지 않습니다.
 
+## `.local` 작업 흐름과 구조
+
+`.local`은 기본 worktree에서 태스크의 상태와 공통 기준을 관리하고, 구현 worktree에서는 symlink를 통해 필요한 기록을 읽는 방식으로 사용합니다. 운영 기록은 Git에서 제외되며, 실제 코드 변경만 task branch에 커밋합니다.
+
+### 작업 흐름
+
+```mermaid
+flowchart LR
+    Request["요청"] --> Todo["TO_DO<br/>태스크 생성"]
+    Todo --> Active["IN_PROGRESS<br/>범위·기준 확정"]
+    Active --> Work["task branch<br/>구현 · 검증 · commit"]
+    Work --> Done["DONE<br/>결과·handoff"]
+    Done --> Remote["push · PR · main · 배포<br/>별도 상태"]
+
+    Templates["templates/task"] -. 양식 .-> Todo
+    Standards["spec-design"] -. 기준 .-> Active
+    Progress["docs/progress.md"] -. 상태 갱신 .-> Active
+    Done -. 완료 반영 .-> Progress
+```
+
+기본 worktree의 조정 담당자는 `TO_DO → IN_PROGRESS → DONE` 이동과 `docs/progress.md` 갱신을 담당합니다. 구현 worktree에서는 공유 `.local`을 운영상 읽기 전용으로 참조하며, 판단과 검증 결과는 handoff를 통해 기본 worktree에 반영합니다.
+
+### 폴더 구조
+
+```text
+📁 .local/
+├── 📄 README.md            운영 규칙과 읽는 순서
+├── 📁 docs/                현재 진행 상황
+├── 📁 spec-design/         장기 기준과 설계
+├── 📁 references/          원본·참고 자료
+├── 📁 external-services/   외부 서비스 기록
+├── 📁 tasks/
+│   ├── 📁 TO_DO/           시작 전
+│   ├── 📁 IN_PROGRESS/     진행 중
+│   └── 📁 DONE/            완료·handoff
+├── 📁 templates/           새 기록 양식
+└── 📁 tools/               운영 점검 도구
+```
+
+`tasks/`의 태스크 폴더는 복제되지 않고 상태에 따라 디렉터리 전체가 이동합니다. 개별 파일까지 포함한 상세 구조는 아래 [저장소 구성](#저장소-구성)에서 확인할 수 있습니다.
+
 ## 기존 저장소에 적용
 
 Git과 Bash 3.2 이상, macOS·Linux의 기본 명령(`awk`, `find`, `grep`, `mktemp` 등)을 사용합니다. 별도 언어 런타임이나 패키지 설치는 필요하지 않습니다. macOS 기본 Bash에서 실행할 수 있고, Windows에서는 WSL 환경을 사용하세요.
